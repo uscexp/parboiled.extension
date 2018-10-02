@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.codegenerator;
 
@@ -15,7 +15,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.github.fge.grappa.parsers.BaseParser;
+import org.parboiled.BaseParser;
+
 import com.github.uscexp.parboiled.extension.annotations.AstCommand;
 import com.github.uscexp.parboiled.extension.interpreter.MethodNameToTreeNodeInfoMaps;
 import com.github.uscexp.parboiled.extension.nodes.AstCommandTreeNode;
@@ -32,18 +33,21 @@ import com.sun.codemodel.JMod;
 import com.sun.codemodel.JType;
 
 /**
- * The {@link AstModelGenerator} creates the model classes from a {@link BaseParser} extended annotated parser class. It creates the
- * corresponding java source files for the {@link AstCommand} annotated rules in the parser class. The generated classes will extend <code>
- * AstCommandTreeNode</code> and the to be implemented methods <code>interpretBeforeChilds</code> and <code>interpretAfterChilds</code>.
+ * The {@link AstModelGenerator} creates the model classes from a
+ * {@link BaseParser} extended annotated parser class. It creates the
+ * corresponding java source files for the {@link AstCommand} annotated rules in
+ * the parser class. The generated classes will extend <code>
+ * AstCommandTreeNode</code> and the to be implemented methods
+ * <code>interpretBeforeChilds</code> and <code>interpretAfterChilds</code>.
  *
- * @author  haui
+ * @author haui
  */
 public class AstModelGenerator {
 
 	private static Logger logger = Logger.getLogger(AstModelGenerator.class.getName());
 
 	public <V> void generateAstModel(String parserClassString, String sourceOutputPath)
-		throws ReflectiveOperationException, IOException {
+			throws ReflectiveOperationException, IOException {
 		@SuppressWarnings("unchecked")
 		Class<? extends BaseParser<V>> parserClass = (Class<? extends BaseParser<V>>) Class.forName(parserClassString);
 
@@ -51,7 +55,7 @@ public class AstModelGenerator {
 	}
 
 	public <V> void generateAstModel(Class<? extends BaseParser<V>> parserClass, String sourceOutputPath)
-		throws ReflectiveOperationException, IOException {
+			throws ReflectiveOperationException, IOException {
 		if (sourceOutputPath == null) {
 			sourceOutputPath = ".";
 		}
@@ -69,7 +73,7 @@ public class AstModelGenerator {
 
 	private void generateClass(Class<? extends BaseParser<?>> parserClass, String sourceOutputPath,
 			MethodNameToTreeNodeInfoMaps methodNameToTreeNodeInfoMaps, String methodName, Object annotation)
-		throws IOException {
+			throws IOException {
 		JCodeModel codeModel = new JCodeModel();
 
 		if (annotation instanceof AstCommand) {
@@ -84,7 +88,7 @@ public class AstModelGenerator {
 
 	private void createClassFile(Class<? extends BaseParser<?>> parserClass, String sourceOutputPath, String methodName,
 			JCodeModel codeModel, String classname)
-		throws JClassAlreadyExistsException, IOException {
+			throws JClassAlreadyExistsException, IOException {
 		if (!classFileExists(sourceOutputPath, classname)) {
 			JDefinedClass definedClass = codeModel._class(classname);
 			String genericTypeName = "V";
@@ -130,7 +134,7 @@ public class AstModelGenerator {
 		MethodConstructorWrapper<Method>[] result = new MethodConstructorWrapper[methods.length];
 
 		for (int i = 0; i < methods.length; i++) {
-			result[i] = new MethodConstructorWrapper<Method>(methods[i]);
+			result[i] = new MethodConstructorWrapper<>(methods[i]);
 		}
 		return result;
 	}
@@ -140,7 +144,7 @@ public class AstModelGenerator {
 		MethodConstructorWrapper<Constructor<?>>[] result = new MethodConstructorWrapper[constructors.length];
 
 		for (int i = 0; i < constructors.length; i++) {
-			result[i] = new MethodConstructorWrapper<Constructor<?>>(constructors[i]);
+			result[i] = new MethodConstructorWrapper<>(constructors[i]);
 		}
 		return result;
 	}
@@ -252,7 +256,7 @@ public class AstModelGenerator {
 			logger.log(Level.SEVERE, "Unexpected error occured", e);
 
 			logger.log(Level.SEVERE,
-				"Syntax: java -cp <dependencies> com.github.uscexp.grappa.extension.codegenerator.AstModelGenerator pasrserClass sourceOutputPath");
+					"Syntax: java -cp <dependencies> com.github.uscexp.parboiled.extension.codegenerator.AstModelGenerator pasrserClass sourceOutputPath");
 		}
 	}
 
@@ -269,73 +273,86 @@ public class AstModelGenerator {
 		}
 
 		public String getName() {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).getName();
-			else
+			} else {
 				return ((Constructor<?>) method).getName();
+			}
 		}
 
 		public int getModifiers() {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).getModifiers();
-			else
+			} else {
 				return ((Constructor<?>) method).getModifiers();
+			}
 		}
 
 		public TypeVariable<?>[] getTypeParameters() {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).getTypeParameters();
-			else
+			} else {
 				return ((Constructor<?>) method).getTypeParameters();
+			}
 		}
 
 		public Class<?> getReturnType() {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).getReturnType();
-			else
+			} else {
 				return null;
+			}
 		}
 
 		public Class<?>[] getParameterTypes() {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).getParameterTypes();
-			else
+			} else {
 				return ((Constructor<?>) method).getParameterTypes();
+			}
 		}
 
 		public Type[] getGenericParameterTypes() {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).getGenericParameterTypes();
-			else
+			} else {
 				return ((Constructor<?>) method).getGenericParameterTypes();
+			}
 		}
 
 		public Class<?>[] getExceptionTypes() {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).getExceptionTypes();
-			else
+			} else {
 				return ((Constructor<?>) method).getExceptionTypes();
+			}
 		}
 
+		@Override
 		public boolean equals(Object obj) {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).equals(obj);
-			else
+			} else {
 				return ((Constructor<?>) method).equals(obj);
+			}
 		}
 
+		@Override
 		public int hashCode() {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).hashCode();
-			else
+			} else {
 				return ((Constructor<?>) method).hashCode();
+			}
 		}
 
+		@Override
 		public String toString() {
-			if (method instanceof Method)
+			if (method instanceof Method) {
 				return ((Method) method).toString();
-			else
+			} else {
 				return ((Constructor<?>) method).toString();
+			}
 		}
 
 	}

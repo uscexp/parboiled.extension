@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.parser.peg;
 
@@ -9,6 +9,7 @@ import com.github.uscexp.parboiled.extension.util.IStack;
  * Command implementation for the <code>PegParser</code> rule: ANY.
  */
 public class AstANYYTreeNode<V> extends AstPegBaseTreeNode<V> {
+
 	public AstANYYTreeNode(String rule, String value) {
 		super(rule, value);
 	}
@@ -17,7 +18,7 @@ public class AstANYYTreeNode<V> extends AstPegBaseTreeNode<V> {
 	protected void interpretAfterChilds(Long id) throws ReflectiveOperationException {
 		super.interpretAfterChilds(id);
 		IStack<Object> stack = this.processStore.getTierStack();
-		String body = "ANY";
+		String body = ANY;
 
 		body = checkPostponedAction(body);
 

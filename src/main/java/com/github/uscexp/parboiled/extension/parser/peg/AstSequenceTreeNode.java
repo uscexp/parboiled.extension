@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.parser.peg;
 
@@ -18,7 +18,7 @@ public class AstSequenceTreeNode<V> extends AstPegBaseTreeNode<V> {
 		super.interpretBeforeChilds(id);
 		IStack<Object> openStack = this.openProcessStore.getTierStack();
 		String peek = "";
-		
+
 		if (!openStack.isEmpty()) {
 			peek = (String) openStack.peek();
 		}
@@ -36,10 +36,10 @@ public class AstSequenceTreeNode<V> extends AstPegBaseTreeNode<V> {
 		IStack<Object> stack = this.processStore.getTierStack();
 		IStack<Object> openStack = this.openProcessStore.getTierStack();
 
-		if(!AstLiteralTreeNode.class.isAssignableFrom(getParent().getClass())
+		if (!AstLiteralTreeNode.class.isAssignableFrom(getParent().getClass())
 				&& !AstCharRangeTreeNode.class.isAssignableFrom(getParent().getClass())) {
-			if(getChildren().size() > 1 || !stack.isEmpty()) {
-		
+			if (getChildren().size() > 1 || !stack.isEmpty()) {
+
 				String peek = "";
 				if (!openStack.isEmpty()) {
 					peek = (String) openStack.peek();
@@ -52,10 +52,11 @@ public class AstSequenceTreeNode<V> extends AstPegBaseTreeNode<V> {
 						methodBody = (String) stack.pop();
 					}
 				} else if (stack.size() > 1) {
-					if(!peek.isEmpty()) 
+					if (!peek.isEmpty()) {
 						methodBody = openStack.pop() + "(";
-					else
-						methodBody = "sequence(";
+					} else {
+						methodBody = SEQUENCE + "(";
+					}
 					while (!stack.isEmpty()) {
 						if (!methodBody.endsWith("(")) {
 							methodBody = methodBody + ", ";
@@ -64,28 +65,30 @@ public class AstSequenceTreeNode<V> extends AstPegBaseTreeNode<V> {
 					}
 					methodBody = methodBody + ")";
 				}
-				
+
 			}
 		}
 		this.processStore.tierOneDown(true);
 		this.openProcessStore.tierOneDown(true);
 		String peek = null;
-		if(!this.openProcessStore.getTierStack().isEmpty()) {
+		if (!this.openProcessStore.getTierStack().isEmpty()) {
 			peek = (String) this.openProcessStore.getTierStack().peek();
 		}
 		for (Object object : openStack) {
-			String val = (String)object;
-			if(peek == null || !FIRST_OF.equals(peek))
+			String val = (String) object;
+			if (peek == null || !FIRST_OF.equals(peek)) {
 				this.openProcessStore.getTierStack().push(val);
+			}
 		}
-		
-		if(!AstLiteralTreeNode.class.isAssignableFrom(getParent().getClass())
+
+		if (!AstLiteralTreeNode.class.isAssignableFrom(getParent().getClass())
 				&& !AstCharRangeTreeNode.class.isAssignableFrom(getParent().getClass())) {
-			if(methodBody != null && !methodBody.isEmpty())
+			if (methodBody != null && !methodBody.isEmpty()) {
 				this.processStore.getTierStack().push(methodBody);
+			}
 		} else {
 			for (Object object : stack) {
-				this.processStore.getTierStack().push((String)object);
+				this.processStore.getTierStack().push(object);
 			}
 		}
 	}
