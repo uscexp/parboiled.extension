@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.parser.peg;
 
@@ -9,6 +9,7 @@ import com.github.uscexp.parboiled.extension.util.IStack;
  * Command implementation for the <code>PegParser</code> rule: charRange.
  */
 public class AstCharRangeTreeNode<V> extends AstPegBaseTreeNode<V> {
+
 	public AstCharRangeTreeNode(String rule, String value) {
 		super(rule, value);
 	}
@@ -22,11 +23,11 @@ public class AstCharRangeTreeNode<V> extends AstPegBaseTreeNode<V> {
 		if (!stack.isEmpty()) {
 			rangeEnd = (String) stack.peek();
 		}
-		if ((rangeEnd.startsWith("ch('")) && (this.value.length() > 1)) {
+		if ((rangeEnd.startsWith("Ch('")) && (this.value.length() > 1)) {
 			rangeStart = rangeStart.substring(3, rangeStart.length() - 1);
 			rangeEnd = rangeEnd.substring(3, rangeEnd.length() - 1);
 			stack.pop();
-			stack.push("charRange(" + rangeStart + ", " + rangeEnd + ")");
+			stack.push(CHAR_RANGE + "(" + rangeStart + ", " + rangeEnd + ")");
 		} else {
 			stack.push(rangeStart);
 		}

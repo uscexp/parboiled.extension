@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.codegenerator;
 
@@ -12,8 +12,10 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.github.fge.grappa.Grappa;
-import com.github.fge.grappa.parsers.BaseParser;
+import org.parboiled.BaseParser;
+import org.parboiled.Parboiled;
+import org.parboiled.common.Preconditions;
+
 import com.github.uscexp.parboiled.extension.exception.AstInterpreterException;
 import com.github.uscexp.parboiled.extension.exception.PegParserGeneratorException;
 import com.github.uscexp.parboiled.extension.interpreter.AstInterpreter;
@@ -21,7 +23,6 @@ import com.github.uscexp.parboiled.extension.interpreter.ProcessStore;
 import com.github.uscexp.parboiled.extension.nodes.AstTreeNode;
 import com.github.uscexp.parboiled.extension.parser.Parser;
 import com.github.uscexp.parboiled.extension.parser.peg.PegParser;
-import com.google.common.base.Preconditions;
 import com.sun.codemodel.JClass;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
@@ -29,10 +30,12 @@ import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JDocComment;
 
 /**
- * The {@link PegParserGenerator} generates a {@link BaseParser} extended parser java class file, from a given Parser Expression Grammar
- * (PEG) file. The allowed PEG syntax is based on Bryan Ford's definitions (http://bford.info/pub/lang/peg).
+ * The {@link PegParserGenerator} generates a {@link BaseParser} extended parser
+ * java class file, from a given Parser Expression Grammar (PEG) file. The
+ * allowed PEG syntax is based on Bryan Ford's definitions
+ * (http://bford.info/pub/lang/peg).
  *
- * @author  haui
+ * @author haui
  */
 public class PegParserGenerator {
 
@@ -53,11 +56,12 @@ public class PegParserGenerator {
 
 	public void generateParserFromFile(String parserClassString, String genericTypeName, String sourceOutputPath, String pegInputPath,
 			Charset encoding)
-		throws PegParserGeneratorException, AstInterpreterException {
+			throws PegParserGeneratorException, AstInterpreterException {
 		String input = null;
 
-		if (encoding == null)
+		if (encoding == null) {
 			encoding = Charset.defaultCharset();
+		}
 
 		file = new File(pegInputPath);
 
@@ -76,10 +80,10 @@ public class PegParserGenerator {
 	}
 
 	public void generateParserFromString(String parserClassString, String genericTypeName, String sourceOutputPath, String pegInput)
-		throws PegParserGeneratorException, AstInterpreterException {
+			throws PegParserGeneratorException, AstInterpreterException {
 		Preconditions.checkNotNull(pegInput);
 
-		parser = Grappa.createParser(PegParser.class);
+		parser = Parboiled.createParser(PegParser.class);
 
 		rootNode = Parser.parseInput(PegParser.class, parser.grammar(), pegInput, true);
 
@@ -88,7 +92,7 @@ public class PegParserGenerator {
 	}
 
 	private void generateParserClassFile(String parserClassString, String genericTypeName, String sourceOutputPath)
-		throws AstInterpreterException, PegParserGeneratorException {
+			throws AstInterpreterException, PegParserGeneratorException {
 		astInterpreter = new AstInterpreter<>();
 
 		Long id = new Date().getTime();
@@ -106,7 +110,7 @@ public class PegParserGenerator {
 	}
 
 	private void generateCode(String sourceOutputPath, Long id, Long idOpen)
-		throws JClassAlreadyExistsException, AstInterpreterException, IOException {
+			throws JClassAlreadyExistsException, AstInterpreterException, IOException {
 		JCodeModel codeModel = new JCodeModel();
 		ProcessStore<String> processStore = ProcessStore.getInstance(id);
 		ProcessStore<Object> openProcessStore = ProcessStore.getInstance(idOpen);
@@ -124,7 +128,7 @@ public class PegParserGenerator {
 	}
 
 	private JDefinedClass prepareDefinedClass(JCodeModel codeModel)
-		throws JClassAlreadyExistsException {
+			throws JClassAlreadyExistsException {
 		JDefinedClass definedClass = codeModel._class(parserClassString);
 		JClass genericType = getGenericType(codeModel);
 		JClass superClass = codeModel.ref(BaseParser.class).narrow(genericType);
@@ -170,12 +174,12 @@ public class PegParserGenerator {
 				inputFileEncoding = Charset.forName(args[4]);
 			}
 			pegParserGenerator.generateParserFromFile(parserClassString, genericTypeName, sourceOutputPath, pegFileInputPath,
-				inputFileEncoding);
+					inputFileEncoding);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Unexpected error occured", e);
 
 			logger.log(Level.SEVERE,
-				"Syntax: java -cp <dependencies> com.github.uscexp.grappa.extension.codegenerator.PegParserGenerator parserClassString genericTypeName sourceOutputPath pegFileInputPath <inputFileEncoding>");
+					"Syntax: java -cp <dependencies> com.github.uscexp.parboiled.extension.codegenerator.PegParserGenerator parserClassString genericTypeName sourceOutputPath pegFileInputPath <inputFileEncoding>");
 		}
 	}
 

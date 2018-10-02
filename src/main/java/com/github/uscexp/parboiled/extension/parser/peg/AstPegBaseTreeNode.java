@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.parser.peg;
 
@@ -10,7 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.fge.grappa.parsers.BaseParser;
+import org.parboiled.BaseParser;
+
 import com.github.uscexp.parboiled.extension.codegenerator.PegParserGenerator;
 import com.github.uscexp.parboiled.extension.codegenerator.ReservedJavaWords;
 import com.github.uscexp.parboiled.extension.interpreter.ProcessStore;
@@ -20,11 +21,18 @@ import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 
 public class AstPegBaseTreeNode<V> extends AstCommandTreeNode<V> {
-	protected static final String ZERO_OR_MORE = "zeroOrMore";
-	protected static final String ONE_OR_MORE = "oneOrMore";
-	protected static final String OPTIONAL = "optional";
-	protected static final String FIRST_OF = "firstOf";
-	
+	protected static final String ZERO_OR_MORE = "ZeroOrMore";
+	protected static final String ONE_OR_MORE = "OneOrMore";
+	protected static final String OPTIONAL = "Optional";
+	protected static final String FIRST_OF = "FirstOf";
+	protected static final String SEQUENCE = "Sequence";
+	protected static final String TEST_NOT = "TestNot";
+	protected static final String TEST = "Test";
+	protected static final String STRING = "String";
+	protected static final String CHAR_RANGE = "CharRange";
+	protected static final String CH = "Ch";
+	protected static final String ANY = "ANY";
+
 	protected ProcessStore<String> processStore;
 	protected ProcessStore<String> openProcessStore;
 	protected ProcessStore<String> closeProcessStore;
@@ -62,14 +70,14 @@ public class AstPegBaseTreeNode<V> extends AstCommandTreeNode<V> {
 		}
 		if ((openMethod.equals(ZERO_OR_MORE)) || (openMethod.equals(ONE_OR_MORE)) || (openMethod.equals(OPTIONAL)) || (openMethod.equals(FIRST_OF))) {
 			bodyString = openMethod + "(" + bodyString + ")";
-		} else if(openMethod != null && !openMethod.isEmpty()) {
+		} else if (openMethod != null && !openMethod.isEmpty()) {
 			openStack.push(openMethod);
 		}
 		return bodyString;
 	}
 
 	protected String getMethodName(String expressionName) {
-		String methodName = (String) this.methodNameMap.get(expressionName);
+		String methodName = this.methodNameMap.get(expressionName);
 		if (methodName == null) {
 			if (expressionName.equals(expressionName.toUpperCase())) {
 				methodName = expressionName;
@@ -83,7 +91,7 @@ public class AstPegBaseTreeNode<V> extends AstCommandTreeNode<V> {
 	}
 
 	protected boolean checkExistence(String methodName) {
-		Boolean result = (Boolean) this.existenceMap.get(methodName);
+		Boolean result = this.existenceMap.get(methodName);
 		if (result == null) {
 			result = Boolean.valueOf(false);
 			for (Field constant : this.constants) {

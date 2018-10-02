@@ -1,183 +1,199 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.parser.peg;
 
-import com.github.fge.grappa.parsers.BaseParser;
-import com.github.fge.grappa.rules.Rule;
+import org.parboiled.BaseParser;
+import org.parboiled.Rule;
+import org.parboiled.annotations.BuildParseTree;
+
 import com.github.uscexp.parboiled.extension.annotations.AstCommand;
 
 /**
- * @author  haui
+ * @author haui
  */
+@BuildParseTree
 public class PegParser extends BaseParser<String> {
 
 	public Rule grammar() {
-		return sequence(S(), oneOrMore(definition()), EOI);
+		return Sequence(S(), OneOrMore(definition()), EOI);
 	}
 
 	@AstCommand
 	public Rule definition() {
-		return sequence(name(), arrow(), expression(), S());
+		return Sequence(name(), arrow(), expression(), S());
 	}
 
 	public Rule expression() {
-		return sequence(sequence(), zerooOrMore());
+		return Sequence(sequence(), zerooOrMore());
 	}
 
 	@AstCommand
 	public Rule sequence() {
-		return oneOrMore(prefix());
+		return OneOrMore(prefix());
 	}
 
 	public Rule zerooOrMore() {
-		return zeroOrMore(sequence(OR(), sequence()));
+		return ZeroOrMore(Sequence(OR(), sequence()));
 	}
 
 	public Rule prefix() {
-		return sequence(optional(firstOf(LOOKAHEAD(), NOT())), suffix());
+		return Sequence(Optional(FirstOf(LOOKAHEAD(), NOT())), suffix());
 	}
 
 	public Rule suffix() {
-		return sequence(primary(), optional(firstOf(OPTION(), ONEORMORE(), ZEROORMORE())), S());
+		return Sequence(primary(), Optional(FirstOf(OPTION(), ONEORMORE(), ZEROORMORE())), S());
 	}
 
 	public Rule primary() {
-		return firstOf(sequence(name(), testNot(arrow())), groupExpr(), literal(), classs(), ANYY());
+		return FirstOf(Sequence(name(), TestNot(arrow())), groupExpr(), literal(), classs(), ANYY());
 	}
 
 	@AstCommand
 	public Rule name() {
-		return sequence(identifier(), S());
+		return Sequence(identifier(), S());
 	}
 
 	public Rule identifier() {
-		return sequence(identStart(), zeroOrMore(identCont()));
+		return Sequence(identStart(), ZeroOrMore(identCont()));
 	}
 
 	public Rule identCont() {
-		return firstOf(identStart(), charRange('0', '9'));
+		return FirstOf(identStart(), CharRange('0', '9'));
 	}
 
 	public Rule identStart() {
-		return firstOf(alpha(), ch('_'));
+		return FirstOf(alpha(), Ch('_'));
 	}
 
 	public Rule groupExpr() {
-		return sequence(OPEN(), expression(), CLOSE(), S());
+		return Sequence(OPEN(), expression(), CLOSE(), S());
 	}
 
 	@AstCommand
 	public Rule literal() {
-		return firstOf(sequence(quote(), zeroOrMore(sequence(testNot(quote()), character())), quote(), S()),
-				sequence(doubleQuote(), zeroOrMore(sequence(testNot(doubleQuote()), character())), doubleQuote(), S()));
+		return FirstOf(Sequence(quote(), ZeroOrMore(Sequence(TestNot(quote()), character())), quote(), S()),
+				Sequence(doubleQuote(), ZeroOrMore(Sequence(TestNot(doubleQuote()), character())), doubleQuote(), S()));
 	}
 
 	@AstCommand
 	public Rule classs() {
-		return sequence(SQUAREOPEN(), zeroOrMore(sequence(testNot(SQUARECLOSE()), charRange())), SQUARECLOSE(), S());
+		return Sequence(SQUAREOPEN(), ZeroOrMore(Sequence(TestNot(SQUARECLOSE()), charRange())), SQUARECLOSE(), S());
 	}
 
 	@AstCommand
 	public Rule charRange() {
-		return firstOf(sequence(character(), ch('-'), character()), character());
+		return FirstOf(Sequence(character(), Ch('-'), character()), character());
 	}
 
 	@AstCommand
 	public Rule character() {
-		return
-			firstOf(sequence(backSlash(),
-					firstOf(quote(), doubleQuote(), backQuote(), backSlash(), anyOf("nrt"),
-						sequence(charRange('0', '2'), charRange('0', '7'), charRange('0', '7')),
-						sequence(charRange('0', '7'), optional(charRange('0', '7'))))), sequence(testNot(backSlash()), ANY));
+		return FirstOf(Sequence(backSlash(),
+				FirstOf(quote(), doubleQuote(), backQuote(), backSlash(), AnyOf("nrt"),
+						Sequence(CharRange('0', '2'), CharRange('0', '7'), CharRange('0', '7')),
+						Sequence(CharRange('0', '7'), Optional(CharRange('0', '7'))))),
+				Sequence(TestNot(backSlash()), ANY));
 	}
 
 	public Rule backSlash() {
-		return ch('\\');
+		return Ch('\\');
 	}
 
 	public Rule quote() {
-		return ch('\'');
+		return Ch('\'');
 	}
 
 	public Rule doubleQuote() {
-		return ch('\"');
+		return Ch('\"');
 	}
 
 	public Rule backQuote() {
-		return ch('`');
+		return Ch('`');
 	}
 
 	// Terminals
 
 	public Rule arrow() {
-		return sequence(string("<-"), S());
+		return Sequence(String("<-"), S());
 	}
 
 	@AstCommand
 	public Rule OR() {
-		return sequence(ch('/'), S());
+		return Sequence(Ch('/'), S());
 	}
 
 	@AstCommand
 	public Rule LOOKAHEAD() {
-		return sequence(ch('&'), S());
+		return Sequence(Ch('&'), S());
 	}
 
 	@AstCommand
 	public Rule NOT() {
-		return sequence(ch('!'), S());
+		return Sequence(Ch('!'), S());
 	}
 
 	@AstCommand
 	public Rule OPTION() {
-		return sequence(ch('?'), S());
+		return Sequence(Ch('?'), S());
 	}
 
 	@AstCommand
 	public Rule ZEROORMORE() {
-		return sequence(ch('*'), S());
+		return Sequence(Ch('*'), S());
 	}
 
 	@AstCommand
 	public Rule ONEORMORE() {
-		return sequence(ch('+'), S());
+		return Sequence(Ch('+'), S());
 	}
 
 	@AstCommand
 	public Rule OPEN() {
-		return sequence(ch('('), S());
+		return Sequence(Ch('('), S());
 	}
 
 	@AstCommand
 	public Rule CLOSE() {
-		return sequence(ch(')'), S());
+		return Sequence(Ch(')'), S());
 	}
 
 	public Rule SQUAREOPEN() {
-		return ch('[');
+		return Ch('[');
 	}
 
 	public Rule SQUARECLOSE() {
-		return ch(']');
+		return Ch(']');
 	}
 
 	@AstCommand
 	public Rule ANYY() {
-		return sequence(ch('.'), S());
+		return Sequence(Ch('.'), S());
 	}
 
 	// blanks
 
 	public Rule EOL() {
-		return firstOf(string("\r\n"), ch('\n'), ch('\r'));
+		return FirstOf(String("\r\n"), Ch('\n'), Ch('\r'));
 	}
 
 	public Rule comment() {
-		return sequence(string("#"), zeroOrMore(sequence(testNot(EOL()), ANY)), firstOf(EOL(), EOI));
+		return Sequence(String("#"), ZeroOrMore(Sequence(TestNot(EOL()), ANY)), FirstOf(EOL(), EOI));
 	}
 
 	public Rule S() {
-		return zeroOrMore(firstOf(ch(' '), ch('\t'), EOL(), comment()));
+		return ZeroOrMore(FirstOf(Ch(' '), Ch('\t'), EOL(), comment()));
+	}
+
+	/**
+	 * ALPHA as defined by RFC 5234, appendix B, section 1: ASCII letters
+	 *
+	 * <p>
+	 * Therefore a-z, A-Z.
+	 * </p>
+	 *
+	 * @return a rule
+	 */
+	public Rule alpha() {
+		return FirstOf(CharRange('a', 'z'), CharRange('A', 'Z'));
 	}
 }

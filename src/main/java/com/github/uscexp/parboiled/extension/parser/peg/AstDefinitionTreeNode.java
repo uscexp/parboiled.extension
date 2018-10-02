@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.parser.peg;
 
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import com.github.fge.grappa.rules.Rule;
+import org.parboiled.Rule;
+
 import com.github.uscexp.parboiled.extension.util.IStack;
 import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JMethod;
