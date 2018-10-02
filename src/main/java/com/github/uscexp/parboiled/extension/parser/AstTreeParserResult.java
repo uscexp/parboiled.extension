@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.parser;
 
-import com.github.fge.grappa.run.ParsingResult;
+import org.parboiled.support.ParsingResult;
+
 import com.github.uscexp.parboiled.extension.nodes.AstTreeNode;
 
 /**
@@ -13,9 +14,9 @@ import com.github.uscexp.parboiled.extension.nodes.AstTreeNode;
 public class AstTreeParserResult<V> {
 
 	private ParsingResult<V> parsingResult;
-	
+
 	private AstTreeNode<V> rootNode;
-	
+
 	public AstTreeParserResult(ParsingResult<V> parsingResult, AstTreeNode<V> rootNode) {
 		super();
 		this.parsingResult = parsingResult;

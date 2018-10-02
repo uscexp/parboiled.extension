@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.nodes.treeconstruction;
 
@@ -10,17 +10,16 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import com.github.fge.grappa.matchers.base.Matcher;
-import com.github.fge.grappa.parsers.BaseParser;
-import com.github.fge.grappa.run.ParseRunnerListener;
-import com.github.fge.grappa.run.context.Context;
-import com.github.fge.grappa.run.context.MatcherContext;
-import com.github.fge.grappa.run.events.MatchFailureEvent;
-import com.github.fge.grappa.run.events.MatchSuccessEvent;
-import com.github.fge.grappa.run.events.PostParseEvent;
-import com.github.fge.grappa.run.events.PreMatchEvent;
-import com.github.fge.grappa.run.events.PreParseEvent;
-import com.github.fge.grappa.support.Position;
+import org.parboiled.BaseParser;
+import org.parboiled.MatchHandler;
+import org.parboiled.MatcherContext;
+import org.parboiled.Rule;
+import org.parboiled.buffers.InputBuffer;
+import org.parboiled.matchers.Matcher;
+import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.support.ParsingResult;
+import org.parboiled.support.Position;
+
 import com.github.uscexp.parboiled.extension.annotations.AstCommand;
 import com.github.uscexp.parboiled.extension.annotations.AstValue;
 import com.github.uscexp.parboiled.extension.interpreter.MethodNameToTreeNodeInfoMaps;
@@ -32,103 +31,119 @@ import com.github.uscexp.parboiled.extension.nodes.AstValueTreeNode;
  * @author haui
  *
  */
-public class AstTreeNodeBuilder<V> extends ParseRunnerListener<V> {
-	
+public class AstTreeNodeBuilder<V> extends BasicParseRunner<V> {
+
 	private static final String AST_COMMAND_TREENODE_SUFFIX = "TreeNode";
 	private static final String AST_COMMAND_TREENODE_PREFIX = "Ast";
 
 	private MethodNameToTreeNodeInfoMaps methodNameToTreeNodeInfoMaps;
 	final private boolean removeAstNopTreeNodes;
-    private final SortedMap<Integer, AstTreeNode<V>> nodes = new TreeMap<>();
+	private final SortedMap<Integer, AstTreeNode<V>> nodes = new TreeMap<>();
 	final private Class<BaseParser<V>> parserClass;
 	private AstTreeNode<V> rootNode;
 	private List<String> matchFailureMessages = new ArrayList<>();
 
 	@SuppressWarnings("unchecked")
-	public AstTreeNodeBuilder(Class<? extends BaseParser<?>> parserClass, boolean removeAstNopTreeNodes) {
-		super();
+	public AstTreeNodeBuilder(Class<? extends BaseParser<?>> parserClass, boolean removeAstNopTreeNodes, Rule rootRule) {
+		super(rootRule);
 		this.parserClass = (Class<BaseParser<V>>) parserClass;
 		methodNameToTreeNodeInfoMaps = findImplementationClassesAndAnnotationTypes(this.parserClass);
 		this.removeAstNopTreeNodes = removeAstNopTreeNodes;
 	}
-	
+
 	public String getParsingErrors() {
 		StringBuilder stringBuilder = new StringBuilder();
-		
+
 		for (String failure : matchFailureMessages) {
-			if(stringBuilder.length() != 0) {
+			if (stringBuilder.length() != 0) {
 				stringBuilder.append('\n');
 			}
 			stringBuilder.append(failure);
 		}
-		
+
 		return stringBuilder.toString();
 	}
 
+	/**
+	 * PreParse
+	 */
 	@Override
-	public void beforeParse(PreParseEvent<V> event) {
-		super.beforeParse(event);
+	protected MatcherContext<V> createRootContext(InputBuffer inputBuffer, MatchHandler matchHandler, boolean fastStringMatching) {
+		MatcherContext<V> rootContext = super.createRootContext(inputBuffer, matchHandler, fastStringMatching);
+		return rootContext;
 	}
 
 	@Override
-	public void beforeMatch(PreMatchEvent<V> event) {
-        final Context<V> context = event.getContext();
-        final int level = context.getLevel();
-        String ruleLabel = context.getMatcher().getLabel();
-        
-        AstTreeNode<V> node = null;
-    	try {
+	public boolean match(MatcherContext<?> context) {
+		beforeMatch(context);
+		boolean match = super.match(context);
+		if (match) {
+			matchSuccess(context);
+		} else {
+			matchFailure(context);
+		}
+		return match;
+	}
+
+	public void beforeMatch(MatcherContext<?> context) {
+		final int level = context.getLevel();
+		String ruleLabel = context.getMatcher().getLabel();
+
+		AstTreeNode<V> node = null;
+		try {
 			node = createAstTreeNode(ruleLabel, "");
 		} catch (ReflectiveOperationException e) {
 			throw new RuntimeException(e);
 		}
 
-//    	if(!removeAstNopTreeNodes || level == 0 || !AstNopTreeNode.class.equals(node.getClass()))
-    	nodes.put(level, node);
+		//    	if(!removeAstNopTreeNodes || level == 0 || !AstNopTreeNode.class.equals(node.getClass()))
+		nodes.put(level, node);
 	}
 
-	@Override
-	public void matchSuccess(MatchSuccessEvent<V> event) {
-        final Context<V> context = event.getContext();
-        final int level = context.getLevel();
-        final String inputForNode = getInputForNode(context);
-        
-        AstTreeNode<V> node = nodes.get(level);
-        
-        if(node != null) {
-        	matchFailureMessages.clear(); // earlier failures are irrelevant, because the parse found a match.
-        	node.setValue(inputForNode);
-	        if(level == 0) {
-	        	rootNode = node;
-	        }
-	        
-	        if(!nodes.headMap(level).isEmpty()) {
-		        final int previousLevel = nodes.headMap(level).lastKey();
-		
-		        if(!nodes.get(previousLevel).getChildren().contains(node)) {
-		        	AstTreeNode<V> parent = nodes.get(previousLevel);
-		        	parent.getChildren().add(node);
-		        	node.setParent(parent);
-		        }
-	        }
-        }
+	public void matchSuccess(MatcherContext<?> context) {
+		final int level = context.getLevel();
+		final String inputForNode = getInputForNode(context);
+
+		AstTreeNode<V> node = nodes.get(level);
+
+		if (node != null) {
+			matchFailureMessages.clear(); // earlier failures are irrelevant, because the parse found a match.
+			node.setValue(inputForNode);
+			if (level == 0) {
+				rootNode = node;
+			}
+
+			if (!nodes.headMap(level).isEmpty()) {
+				final int previousLevel = nodes.headMap(level).lastKey();
+
+				if (!nodes.get(previousLevel).getChildren().contains(node)) {
+					AstTreeNode<V> parent = nodes.get(previousLevel);
+					parent.getChildren().add(node);
+					node.setParent(parent);
+				}
+			}
+		}
 	}
 
-	@Override
-	public void matchFailure(MatchFailureEvent<V> event) {
-	       final Context<V> context = event.getContext();
-	        Position position = context.getPosition();
-	        int line = position.getLine();
-	        int column = position.getColumn();
-	        
-	        String msg = String.format("Matching failure: Path: %s, at line %d, column %d", context.toString(), line, column);
-			matchFailureMessages.add(msg);
+	public void matchFailure(MatcherContext<?> context) {
+		Position position = context.getPosition();
+		int line = position.line;
+		int column = position.column;
+
+		String msg = String.format("Matching failure: Path: %s, at line %d, column %d", context.toString(), line, column);
+		matchFailureMessages.add(msg);
 	}
 
+	/**
+	 * PostParse
+	 */
 	@Override
-	public void afterParse(PostParseEvent<V> event) {
-		if(removeAstNopTreeNodes && rootNode != null)
+	protected ParsingResult<V> createParsingResult(boolean matched, MatcherContext<V> rootContext) {
+		ParsingResult<V> parsingResult = super.createParsingResult(matched, rootContext);
+		if (removeAstNopTreeNodes && rootNode != null) {
 			removeAstNopTreeNodes(rootNode);
+		}
+		return parsingResult;
 	}
 
 	public static <V> void removeAstNopTreeNodes(AstTreeNode<V> rootNode) {
@@ -138,11 +153,11 @@ public class AstTreeNodeBuilder<V> extends ParseRunnerListener<V> {
 	@SuppressWarnings("unchecked")
 	private static <V> void removeAstNopTreeNodes(AstTreeNode<V> rootNode, AstTreeNode<V> node, AstTreeNode<V> parentNode) {
 		for (AstTreeNode<V> childNode : node.getChildren().toArray(new AstTreeNode[node.getChildren().size()])) {
-			if(AstNopTreeNode.class.isAssignableFrom(childNode.getClass())) {
+			if (AstNopTreeNode.class.isAssignableFrom(childNode.getClass())) {
 				node.getChildren().remove(childNode);
 				removeAstNopTreeNodes(rootNode, childNode, parentNode);
 			} else {
-				if(AstNopTreeNode.class.isAssignableFrom(node.getClass()) && parentNode != rootNode) {
+				if (AstNopTreeNode.class.isAssignableFrom(node.getClass()) && parentNode != rootNode) {
 					parentNode.getChildren().add(childNode);
 					childNode.setParent(parentNode);
 				} else {
@@ -169,10 +184,11 @@ public class AstTreeNodeBuilder<V> extends ParseRunnerListener<V> {
 				Class<?> implementationClass = findImplementationClass(parserClass, methods[i].getName());
 				methodNameToTreeNodeInfoMaps.putMethodNameToTreeNodeImplementation(methods[i].getName(), implementationClass);
 			}
-			if(astCommand != null)
+			if (astCommand != null) {
 				methodNameToTreeNodeInfoMaps.putMethodNameToTreeNodeAnnotationType(methods[i].getName(), astCommand);
-			else if(astValue != null)
+			} else if (astValue != null) {
 				methodNameToTreeNodeInfoMaps.putMethodNameToTreeNodeAnnotationType(methods[i].getName(), astValue);
+			}
 		}
 		return methodNameToTreeNodeInfoMaps;
 	}
@@ -213,12 +229,12 @@ public class AstTreeNodeBuilder<V> extends ParseRunnerListener<V> {
 
 		return methods.toArray(new Method[methods.size()]);
 	}
-	
+
 	private static Method[] getAllDeclaredMethods(Class<?> clazz) {
 		List<Method> methods = new ArrayList<>();
-		
+
 		getAllDeclaredMethods(clazz, methods);
-				
+
 		return methods.toArray(new Method[methods.size()]);
 	}
 
@@ -228,7 +244,7 @@ public class AstTreeNodeBuilder<V> extends ParseRunnerListener<V> {
 			methods.add(method);
 		}
 		Class<?> superClass = clazz.getSuperclass();
-		if(superClass != null && !superClass.isAssignableFrom(BaseParser.class)) {
+		if (superClass != null && !superClass.isAssignableFrom(BaseParser.class)) {
 			getAllDeclaredMethods(superClass, methods);
 		}
 	}
@@ -319,9 +335,9 @@ public class AstTreeNodeBuilder<V> extends ParseRunnerListener<V> {
 		return result;
 	}
 
-    private String getInputForNode(final Context<?> context){
-        final int start = context.getStartIndex();
-        int end = context.getCurrentIndex();
-        return context.getInputBuffer().extract(start, end);
-    }
+	private String getInputForNode(final MatcherContext<?> context) {
+		final int start = context.getStartIndex();
+		int end = context.getCurrentIndex();
+		return context.getInputBuffer().extract(start, end);
+	}
 }

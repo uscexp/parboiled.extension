@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.codegenerator;
 
@@ -24,12 +24,11 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import org.junit.Test;
+import org.parboiled.BaseParser;
+import org.parboiled.Parboiled;
+import org.parboiled.Rule;
+import org.parboiled.errors.GrammarException;
 
-import com.github.fge.grappa.Grappa;
-import com.github.fge.grappa.exceptions.InvalidGrammarException;
-import com.github.fge.grappa.parsers.BaseParser;
-import com.github.fge.grappa.rules.Rule;
-import com.github.uscexp.parboiled.extension.codegenerator.PegParserGenerator;
 import com.github.uscexp.parboiled.extension.exception.PegParserGeneratorException;
 import com.github.uscexp.parboiled.extension.nodes.AstTreeNode;
 import com.github.uscexp.parboiled.extension.parser.Parser;
@@ -41,7 +40,7 @@ public class PegParserGeneratorTest {
 
 	private static final String PEG_INPUT_PATH = "PEG.peg";
 	private static final String SOURCE_OUTPUT_PATH = "target";
-	private static final String TEST_PARSER_CLASS = "com.github.uscexp.grappa.extension.codegenerator.testparser.TestPegParser";
+	private static final String TEST_PARSER_CLASS = "com.github.uscexp.parboiled.extension.codegenerator.testparser.TestPegParser";
 	private static final String TEST_GENERIC_TYPE_CLASS = "java.lang.String";
 
 	private PegParserGenerator pegParserGeneratorSUT = new PegParserGenerator();
@@ -61,7 +60,7 @@ public class PegParserGeneratorTest {
 		files.add(file);
 		// Compile source file.
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 		StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
 		Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(files);
 		compiler.getTask(null, fileManager, diagnostics, null, null, compilationUnits).call();
@@ -76,7 +75,7 @@ public class PegParserGeneratorTest {
 		Class<? extends BaseParser<String>> cls = (Class<? extends BaseParser<String>>) Class.forName(TEST_PARSER_CLASS, true, classLoader);
 
 		@SuppressWarnings("rawtypes")
-		BaseParser parser = Grappa.createParser(cls);
+		BaseParser parser = Parboiled.createParser(cls);
 
 		Method method = parser.getClass().getDeclaredMethod("grammar", (Class<?>[]) null);
 
@@ -92,7 +91,7 @@ public class PegParserGeneratorTest {
 		AstTreeNode<String> rootNode = Parser.parseInput(cls, (Rule) method.invoke(parser, (Object[]) null), input, true);
 
 		assertNotNull(rootNode);
-		
+
 		// clean up
 		file.delete();
 		file = new File(pathname + ".class");
@@ -112,7 +111,7 @@ public class PegParserGeneratorTest {
 		pegParserGeneratorSUT.generateParserFromFile(TEST_PARSER_CLASS, TEST_GENERIC_TYPE_CLASS, SOURCE_OUTPUT_PATH, "nonexistent", null);
 	}
 
-	@Test(expected = InvalidGrammarException.class)
+	@Test(expected = GrammarException.class)
 	public void testGenerateParserFromStringFromFileInputError() throws Exception {
 		pegParserGeneratorSUT.generateParserFromString(TEST_PARSER_CLASS, TEST_GENERIC_TYPE_CLASS, SOURCE_OUTPUT_PATH, "a - bc");
 	}

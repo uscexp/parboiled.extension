@@ -1,11 +1,12 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.interpreter;
 
 import java.io.OutputStream;
 
-import com.github.fge.grappa.parsers.BaseParser;
+import org.parboiled.BaseParser;
+
 import com.github.uscexp.parboiled.extension.annotations.AstCommand;
 import com.github.uscexp.parboiled.extension.annotations.AstValue;
 import com.github.uscexp.parboiled.extension.exception.AstInterpreterException;

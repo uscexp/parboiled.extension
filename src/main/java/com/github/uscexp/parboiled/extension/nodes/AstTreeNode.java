@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.nodes;
 
@@ -9,7 +9,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.fge.grappa.run.ParsingResult;
+import org.parboiled.support.ParsingResult;
+
 import com.github.uscexp.parboiled.extension.interpreter.AstInterpreter;
 import com.github.uscexp.parboiled.extension.interpreter.ProcessStore;
 
@@ -35,10 +36,11 @@ public abstract class AstTreeNode<V> {
 	}
 
 	public void interpretIt(Long id, boolean forewardOrder) throws Exception {
-		if (!ProcessStore.getInstance(id).checkPrecondition())
+		if (!ProcessStore.getInstance(id).checkPrecondition()) {
 			return;
+		}
 		interpretBeforeChilds(id);
-		if(!skipAutoInterpretation) {
+		if (!skipAutoInterpretation) {
 			if (forewardOrder) {
 				for (AstTreeNode<V> astTreeNode : getChildren()) {
 					astTreeNode.interpretIt(id, forewardOrder);

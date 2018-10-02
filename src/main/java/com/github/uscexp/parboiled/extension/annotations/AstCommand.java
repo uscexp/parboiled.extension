@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.annotations;
 
@@ -10,8 +10,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * annotation for a parser rule. announce that the interpreter will find
- * the command logic in the given implementation of the AstCommandTreeNode.
+ * annotation for a parser rule. announce that the interpreter will find the
+ * command logic in the given implementation of the AstCommandTreeNode.
  * 
  * @author haui
  *

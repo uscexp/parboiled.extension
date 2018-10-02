@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.testparser.subclass;
 
-import com.github.fge.grappa.rules.Rule;
+import org.parboiled.Rule;
+
 import com.github.uscexp.parboiled.extension.testparser.CalculatorParser;
 
 /**
@@ -13,6 +14,6 @@ import com.github.uscexp.parboiled.extension.testparser.CalculatorParser;
 public class ExtendedCalculatorParser extends CalculatorParser {
 
 	public Rule extendeInputLine() {
-		return sequence(inputLine(), true);
+		return Sequence(inputLine(), true);
 	}
 }

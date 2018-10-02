@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.parser.peg;
 
@@ -9,6 +9,7 @@ import com.github.uscexp.parboiled.extension.util.IStack;
  * Command implementation for the <code>PegParser</code> rule: literal.
  */
 public class AstLiteralTreeNode<V> extends AstPegBaseTreeNode<V> {
+
 	public AstLiteralTreeNode(String rule, String value) {
 		super(rule, value);
 	}
@@ -33,7 +34,7 @@ public class AstLiteralTreeNode<V> extends AstPegBaseTreeNode<V> {
 						character = character.substring(4, character.length() - 2);
 						chars = chars + character;
 						if (chars.indexOf(compareValue) != -1) {
-							item = "string(\"" + compareValue + "\")";
+							item = STRING + "(\"" + compareValue + "\")";
 							break;
 						}
 					}

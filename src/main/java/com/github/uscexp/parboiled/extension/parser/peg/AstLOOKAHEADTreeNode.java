@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2016 by haui - all rights reserved
+ * Copyright (C) 2014 - 2018 by haui - all rights reserved
  */
 package com.github.uscexp.parboiled.extension.parser.peg;
 
@@ -18,6 +18,6 @@ public class AstLOOKAHEADTreeNode<V> extends AstPegBaseTreeNode<V> {
 		super.interpretAfterChilds(id);
 		IStack<Object> stack = this.processStore.getTierStack();
 		String param = (String) stack.pop();
-		stack.push("test(" + param + ")");
+		stack.push(TEST + "(" + param + ")");
 	}
 }
