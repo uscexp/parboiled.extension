@@ -4,7 +4,7 @@
 
 	<groupId>com.github.uscexp</groupId>
 	<artifactId>parboiled.extension</artifactId>
-	<version>0.5.0-Beta-SNAPSHOT</version>
+	<version>0.1.0-Beta</version>
 	<packaging>jar</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
